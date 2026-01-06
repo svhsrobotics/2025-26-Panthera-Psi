@@ -71,16 +71,16 @@ public class FINALTELEOP extends LinearOpMode{
 
             right.setPower((gamepad1.right_stick_x + gamepad1.left_stick_y));
             left.setPower((gamepad1.right_stick_x - gamepad1.left_stick_y));
-            //0.48 is open 0.02 is close
+            //0.25 is open 0.02 is close
             if (gamepad1.dpad_up) { //opens da gate
-                gateServo.setPosition(0.48); //i am a silly guy
-                gateServo2.setPosition(0.48);
+                gateServo.setPosition(0.25);
+                gateServo2.setPosition(0.25);
             } else if (gamepad1.dpad_down) { //close
                 gateServo.setPosition(0.02);
                 gateServo2.setPosition(0.02);
             }
 
-            if (gamepad1.dpad_right) {
+            if (gamepad1.dpad_right) { //dpad manually spins up or down flywheels
                 launch.setPower(launchpower);
                 launch2.setPower(launchpower);
 
@@ -118,8 +118,8 @@ public class FINALTELEOP extends LinearOpMode{
             if(gamepad1.a){
                 intake.setPower(0.2);
                 if(launchpower == launch.getPower()) {
-                    gateServo.setPosition(0.48);
-                    gateServo2.setPosition(0.48);
+                    gateServo.setPosition(0.25);
+                    gateServo2.setPosition(0.25);
                     sleep(100);
                     intake.setPower(0);
 
@@ -129,8 +129,8 @@ public class FINALTELEOP extends LinearOpMode{
                     right.setPower(0);
                     left.setPower(0);
                     sleep(4500);
-                    gateServo.setPosition(0.48);
-                    gateServo2.setPosition(0.48);
+                    gateServo.setPosition(0.25);
+                    gateServo2.setPosition(0.25);
                     sleep(100);
                     intake.setPower(0);
                 }
