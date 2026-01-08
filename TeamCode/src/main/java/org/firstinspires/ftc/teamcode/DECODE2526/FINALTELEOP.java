@@ -10,7 +10,14 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
+
 import org.firstinspires.ftc.teamcode.util.Debouncer;
+import org.firstinspires.ftc.teamcode.util.Toggle;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @TeleOp
 public class FINALTELEOP extends LinearOpMode{
@@ -24,8 +31,11 @@ public class FINALTELEOP extends LinearOpMode{
     private VoltageSensor  voltSensor;
     private RevBlinkinLedDriver frontLights;
     private RevBlinkinLedDriver rearLights;
+    private Toggle toggle = new Toggle();
 
+    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
+private Debouncer shootDebouncer = new Debouncer();
     private boolean debounce;
     private boolean isthethingthething;
     double totalCurrent = 0;
@@ -46,6 +56,7 @@ public class FINALTELEOP extends LinearOpMode{
         voltSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
         frontLights = hardwareMap.get(RevBlinkinLedDriver.class, "frontLights");
         rearLights = hardwareMap.get(RevBlinkinLedDriver.class, "rearLights");
+        AtomicBoolean shooting = new AtomicBoolean(false);
 
         gateServo2.setDirection(Servo.Direction.REVERSE);
         debounce=true;
@@ -71,10 +82,11 @@ public class FINALTELEOP extends LinearOpMode{
 
             right.setPower((gamepad1.right_stick_x + gamepad1.left_stick_y));
             left.setPower((gamepad1.right_stick_x - gamepad1.left_stick_y));
-            //0.48 is open 0.02 is close
+            //0.45 is open 0.02 is close
             if (gamepad1.dpad_up) { //opens da gate
-                gateServo.setPosition(0.48); //i am a silly guy
-                gateServo2.setPosition(0.48);
+                gateServo.setPosition(0.25); //i am a silly guy
+
+                gateServo2.setPosition(0.25);
             } else if (gamepad1.dpad_down) { //close
                 gateServo.setPosition(0.02);
                 gateServo2.setPosition(0.02);
@@ -113,27 +125,41 @@ public class FINALTELEOP extends LinearOpMode{
 
             if(gamepad1.right_bumper){
                 intake.setPower(0);
+
+
             }
 
-            if(gamepad1.a){
-                intake.setPower(0.2);
-                if(launchpower == launch.getPower()) {
-                    gateServo.setPosition(0.48);
-                    gateServo2.setPosition(0.48);
-                    sleep(100);
-                    intake.setPower(0);
 
-                } else if (launchpower != launch.getPower()) {
-                    launch.setPower(launchpower);
-                    launch2.setPower(launchpower);
-                    right.setPower(0);
-                    left.setPower(0);
-                    sleep(4500);
-                    gateServo.setPosition(0.48);
-                    gateServo2.setPosition(0.48);
-                    sleep(100);
+            if(shootDebouncer.update(gamepad1.a) && !shooting.get()){
+
+                //shoot
+                /*
+                spin up wheel
+                open gate
+                wait a little
+                set power 0
+                 */
+                shooting.set(true);
+                intake.setPower(0.2);
+                launch.setPower(launchpower);
+                launch.setPower(launchpower);
+                //wait 1 sec then open the gate
+                scheduler.schedule(() -> {
+                    gateServo.setPosition(0.25);
+                    gateServo2.setPosition(0.25);
+                }, 5, TimeUnit.SECONDS);
+
+                scheduler.schedule(() ->{
+                    gateServo.setPosition(0.02);
+                    gateServo2.setPosition(0.02);
                     intake.setPower(0);
-                }
+                    launch.setPower(0);
+                    launch2.setPower(0);
+                    shooting.set(false);
+                }, 6, TimeUnit.SECONDS);
+
+
+
             }
 
             if(gamepad2.y){
@@ -162,5 +188,8 @@ public class FINALTELEOP extends LinearOpMode{
             //   telemetry.update();
             // }
         }
+        scheduler.shutdownNow();
     }
+
 }
+
