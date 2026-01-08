@@ -55,6 +55,7 @@ public class FINALTELEOP extends LinearOpMode{
         double gatePos = 0;
         double launchpower = 0;
         System.out.println("set gatePos to 0");
+        double servoshootpos = 0.25;
 
         while(opModeInInit()){
             launchpower=0.9;
@@ -67,14 +68,15 @@ public class FINALTELEOP extends LinearOpMode{
             System.out.println("gatepos: " + gatePos);
             System.out.println("servo 1 pos: " + gateServo.getPosition());
             System.out.println("servo 2 pos: " + gateServo2.getPosition());
+            System.out.println("kickpos: " + servoshootpos);
 
 
             right.setPower((gamepad1.right_stick_x + gamepad1.left_stick_y));
             left.setPower((gamepad1.right_stick_x - gamepad1.left_stick_y));
             //0.25 is open 0.02 is close
             if (gamepad1.dpad_up) { //opens da gate
-                gateServo.setPosition(0.25);
-                gateServo2.setPosition(0.25);
+                gateServo.setPosition(servoshootpos);
+                gateServo2.setPosition(servoshootpos);
             } else if (gamepad1.dpad_down) { //close
                 gateServo.setPosition(0.02);
                 gateServo2.setPosition(0.02);
@@ -101,6 +103,7 @@ public class FINALTELEOP extends LinearOpMode{
             telemetry.addData("servo1Pos: ", gateServo.getPosition());
             telemetry.addData("servo2Pos", gateServo2.getPosition());
             telemetry.addData("average milliamp",  averageCurrent);
+            telemetry.addData("shootservopos",  servoshootpos);
             telemetry.update();
 
             if(gamepad1.b){
@@ -118,8 +121,8 @@ public class FINALTELEOP extends LinearOpMode{
             if(gamepad1.a){
                 intake.setPower(0.2);
                 if(launchpower == launch.getPower()) {
-                    gateServo.setPosition(0.25);
-                    gateServo2.setPosition(0.25);
+                    gateServo.setPosition(servoshootpos);
+                    gateServo2.setPosition(servoshootpos);
                     sleep(100);
                     intake.setPower(0);
 
@@ -129,8 +132,8 @@ public class FINALTELEOP extends LinearOpMode{
                     right.setPower(0);
                     left.setPower(0);
                     sleep(4500);
-                    gateServo.setPosition(0.25);
-                    gateServo2.setPosition(0.25);
+                    gateServo.setPosition(servoshootpos);
+                    gateServo2.setPosition(servoshootpos);
                     sleep(100);
                     intake.setPower(0);
                 }
@@ -145,6 +148,13 @@ public class FINALTELEOP extends LinearOpMode{
             }
             if(gamepad2.a){
                 intake.setPower(-1);
+            }
+
+            if(gamepad2.dpad_left){
+                servoshootpos = servoshootpos+1;
+            }
+            if(gamepad2.dpad_right){
+                servoshootpos = servoshootpos-1;
             }
 
 
