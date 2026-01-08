@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
+import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 import org.firstinspires.ftc.teamcode.util.Debouncer;
 
 //this is the final one
@@ -28,6 +29,7 @@ public class PSI_TELEOP_IHATEBRENNAN extends LinearOpMode {
 
     private boolean debounce;
     private boolean isthethingthething;
+    private Boolean flipped;
     double totalCurrent = 0;
     int denominator = 0;
     double averageCurrent = 0;
@@ -35,6 +37,8 @@ public class PSI_TELEOP_IHATEBRENNAN extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        Boolean flipped = false;
+
         right = hardwareMap.get(DcMotor.class, "right");
         left = hardwareMap.get(DcMotor.class, "left");
         launch2 = hardwareMap.get(DcMotor.class, "launch2");
@@ -50,7 +54,7 @@ public class PSI_TELEOP_IHATEBRENNAN extends LinearOpMode {
         gateServo2.setDirection(Servo.Direction.REVERSE);
         debounce = true;
         isthethingthething = false;
-        Debouncer debouncingOnDeesNuts = new Debouncer();
+        Debouncer theDEbouncer = new Debouncer();
         Debouncer debouncer2 = new Debouncer();
         double gatePos = 0;
         double launchpower = 0;
@@ -68,9 +72,14 @@ public class PSI_TELEOP_IHATEBRENNAN extends LinearOpMode {
             System.out.println("servo 1 pos: " + gateServo.getPosition());
             System.out.println("servo 2 pos: " + gateServo2.getPosition());
 
-
+            if (flipped == false) {
             right.setPower((gamepad1.right_stick_x + gamepad1.left_stick_y));
             left.setPower((gamepad1.right_stick_x - gamepad1.left_stick_y));
+            } else {
+                right.setPower(-(gamepad1.right_stick_x + gamepad1.left_stick_y));
+                left.setPower(-(gamepad1.right_stick_x - gamepad1.left_stick_y));
+            }
+
             //0.25 is open 0.02 is close
             if (gamepad1.dpad_up) { //opens da gate
                 gateServo.setPosition(0.25);
@@ -91,7 +100,9 @@ public class PSI_TELEOP_IHATEBRENNAN extends LinearOpMode {
 
             }
 
-            if (debouncingOnDeesNuts.update(gamepad2.dpad_up)) {
+
+
+            if (theDEbouncer.update(gamepad2.dpad_up)) {
                 launchpower += .01;
             } else if (debouncer2.update(gamepad2.dpad_down)) {
                 launchpower -= .01;
