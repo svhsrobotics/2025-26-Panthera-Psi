@@ -1,6 +1,3 @@
-package org.firstinspires.ftc.teamcode.DECODE2526;
-
-
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -10,17 +7,14 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-
+import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 import org.firstinspires.ftc.teamcode.util.Debouncer;
-import org.firstinspires.ftc.teamcode.util.Toggle;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+//this is the final one
 
-@TeleOp
-public class FINALTELEOP extends LinearOpMode{
+//unless gradle KILLS ITSELF again
+
+public class PSI_TELEOP_IHATEBRENNAN extends LinearOpMode {
     private DcMotor right;
     private DcMotor left;
     private DcMotor launch2;
@@ -28,16 +22,14 @@ public class FINALTELEOP extends LinearOpMode{
     private DcMotorEx intake;
     private Servo gateServo;
     private Servo gateServo2;
-    private VoltageSensor  voltSensor;
+    private VoltageSensor voltSensor;
     private RevBlinkinLedDriver frontLights;
     private RevBlinkinLedDriver rearLights;
-    private Toggle toggle = new Toggle();
 
-    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-private Debouncer shootDebouncer = new Debouncer();
     private boolean debounce;
     private boolean isthethingthething;
+    private Boolean flipped;
     double totalCurrent = 0;
     int denominator = 0;
     double averageCurrent = 0;
@@ -45,10 +37,12 @@ private Debouncer shootDebouncer = new Debouncer();
 
     @Override
     public void runOpMode() throws InterruptedException {
+        Boolean flipped = false;
+
         right = hardwareMap.get(DcMotor.class, "right");
         left = hardwareMap.get(DcMotor.class, "left");
-        launch2=hardwareMap.get(DcMotor.class, "launch2");
-        launch=hardwareMap.get(DcMotor.class, "launch1");
+        launch2 = hardwareMap.get(DcMotor.class, "launch2");
+        launch = hardwareMap.get(DcMotor.class, "launch1");
         launch.setDirection(DcMotorSimple.Direction.REVERSE);
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         gateServo = hardwareMap.get(Servo.class, "gateServo");
@@ -56,19 +50,18 @@ private Debouncer shootDebouncer = new Debouncer();
         voltSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
         frontLights = hardwareMap.get(RevBlinkinLedDriver.class, "frontLights");
         rearLights = hardwareMap.get(RevBlinkinLedDriver.class, "rearLights");
-AtomicBoolean shooting = new AtomicBoolean(false);
+
         gateServo2.setDirection(Servo.Direction.REVERSE);
-        debounce=true;
-        isthethingthething=false;
-        Debouncer debouncingOnDeesNuts = new Debouncer();
+        debounce = true;
+        isthethingthething = false;
+        Debouncer theDEbouncer = new Debouncer();
         Debouncer debouncer2 = new Debouncer();
         double gatePos = 0;
         double launchpower = 0;
         System.out.println("set gatePos to 0");
-        double servoshootpos = 0.25;
 
-        while(opModeInInit()){
-            launchpower=0.9;
+        while (opModeInInit()) {
+            launchpower = 0.9;
             frontLights.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
             rearLights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
         }
@@ -78,15 +71,19 @@ AtomicBoolean shooting = new AtomicBoolean(false);
             System.out.println("gatepos: " + gatePos);
             System.out.println("servo 1 pos: " + gateServo.getPosition());
             System.out.println("servo 2 pos: " + gateServo2.getPosition());
-            System.out.println("kickpos: " + servoshootpos);
 
-
+            if (flipped == false) {
             right.setPower((gamepad1.right_stick_x + gamepad1.left_stick_y));
             left.setPower((gamepad1.right_stick_x - gamepad1.left_stick_y));
+            } else {
+                right.setPower(-(gamepad1.right_stick_x + gamepad1.left_stick_y));
+                left.setPower(-(gamepad1.right_stick_x - gamepad1.left_stick_y));
+            }
+
             //0.25 is open 0.02 is close
             if (gamepad1.dpad_up) { //opens da gate
-                gateServo.setPosition(servoshootpos);
-                gateServo2.setPosition(servoshootpos);
+                gateServo.setPosition(0.25);
+                gateServo2.setPosition(0.25);
             } else if (gamepad1.dpad_down) { //close
                 gateServo.setPosition(0.02);
                 gateServo2.setPosition(0.02);
@@ -103,7 +100,9 @@ AtomicBoolean shooting = new AtomicBoolean(false);
 
             }
 
-            if (debouncingOnDeesNuts.update(gamepad2.dpad_up)) {
+
+
+            if (theDEbouncer.update(gamepad2.dpad_up)) {
                 launchpower += .01;
             } else if (debouncer2.update(gamepad2.dpad_down)) {
                 launchpower -= .01;
@@ -112,11 +111,10 @@ AtomicBoolean shooting = new AtomicBoolean(false);
             telemetry.addData("shoot power", launchpower);
             telemetry.addData("servo1Pos: ", gateServo.getPosition());
             telemetry.addData("servo2Pos", gateServo2.getPosition());
-            telemetry.addData("average milliamp",  averageCurrent);
-            telemetry.addData("shootservopos",  servoshootpos);
+            telemetry.addData("average milliamp", averageCurrent);
             telemetry.update();
 
-            if(gamepad1.b){
+            if (gamepad1.b) {
                 intake.setPower(1);
                 gateServo.setPosition(.02);
                 gateServo2.setPosition(.02);
@@ -124,61 +122,40 @@ AtomicBoolean shooting = new AtomicBoolean(false);
                 launch2.setPower(0);
             }
 
-            if(gamepad1.right_bumper){
+            if (gamepad1.right_bumper) {
                 intake.setPower(0);
-
-
             }
 
-
-            if(shootDebouncer.update(gamepad1.a) && !shooting.get()){
-
-                //shoot
-                /*
-                spin up wheel
-                open gate
-                wait a little
-                set power 0
-                 */
-                shooting.set(true);
+            if (gamepad1.a) {
                 intake.setPower(0.2);
-                launch.setPower(launchpower);
-                launch.setPower(launchpower);
-                //wait 1 sec then open the gate
-                scheduler.schedule(() -> {
+                if (launchpower == launch.getPower()) {
                     gateServo.setPosition(0.25);
                     gateServo2.setPosition(0.25);
-                }, 5, TimeUnit.SECONDS);
-
-                scheduler.schedule(() ->{
-                    gateServo.setPosition(0.02);
-                    gateServo2.setPosition(0.02);
+                    sleep(100);
                     intake.setPower(0);
-                    launch.setPower(0);
-                    launch2.setPower(0);
-                    shooting.set(false);
-                }, 6, TimeUnit.SECONDS);
 
-
-
+                } else if (launchpower != launch.getPower()) {
+                    launch.setPower(launchpower);
+                    launch2.setPower(launchpower);
+                    right.setPower(0);
+                    left.setPower(0);
+                    sleep(4500);
+                    gateServo.setPosition(0.25);
+                    gateServo2.setPosition(0.25);
+                    sleep(100);
+                    intake.setPower(0);
+                }
             }
 
-            if(gamepad2.y){
+            if (gamepad2.y) {
                 intake.setPower(1);
             }
 
-            if(gamepad2.x){
+            if (gamepad2.x) {
                 intake.setPower(0);
             }
-            if(gamepad2.a){
+            if (gamepad2.a) {
                 intake.setPower(-1);
-            }
-
-            if(gamepad2.dpad_left){
-                servoshootpos = servoshootpos+1;
-            }
-            if(gamepad2.dpad_right){
-                servoshootpos = servoshootpos-1;
             }
 
 
@@ -196,8 +173,5 @@ AtomicBoolean shooting = new AtomicBoolean(false);
             //   telemetry.update();
             // }
         }
-        scheduler.shutdownNow();
     }
-
 }
-
